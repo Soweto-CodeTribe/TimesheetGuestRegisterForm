@@ -10,6 +10,7 @@ import {
   CircularProgress,
   IconButton,
   InputAdornment,
+  FormHelperText,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -20,6 +21,7 @@ import {
   Event,
   ArrowDropDown,
   Check,
+  Error,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -33,6 +35,10 @@ const GuestRegisterScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [errors, setErrors] = useState({
+    phone: '',
+    terms: '',
+  });
 
   const events = [
     'React Bootcamp',
@@ -62,32 +68,69 @@ const GuestRegisterScreen = () => {
   };
 
   const validatePhoneNumber = (phoneNumber) => {
-    const regex = /^\d{10}$/;
+    // Validate that phone starts with 0 and has exactly 10 digits
+    const regex = /^0\d{9}$/;
     return regex.test(phoneNumber);
   };
 
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    // Only allow digits and limit to 10 characters
+    if (/^\d*$/.test(value) && value.length <= 10) {
+      setPhoneNumber(value);
+      
+      // Clear error if valid, or set appropriate error message
+      if (value.length === 0) {
+        setErrors({...errors, phone: ''});
+      } else if (value.length > 0 && !value.startsWith('0')) {
+        setErrors({...errors, phone: 'Phone number must start with 0'});
+      } else if (value.length === 10) {
+        setErrors({...errors, phone: ''});
+      } else if (value.length > 0) {
+        setErrors({...errors, phone: 'Phone number must be 10 digits'});
+      }
+    }
+  };
+
+  const handleCheckboxChange = (e) => {
+    setIsChecked(e.target.checked);
+    if (e.target.checked) {
+      setErrors({...errors, terms: ''});
+    }
+  };
+
   const handleRegister = () => {
+    // Reset all errors
+    const newErrors = { phone: '', terms: '' };
+    let hasError = false;
+
     if (!validateEmail(email)) {
       alert('Invalid Email', 'Please enter a valid email address ending with @gmail.com or @yahoo.com.');
-      return;
+      hasError = true;
     }
 
     if (idNumber && !validateIDNumber(idNumber)) {
       alert('Invalid ID Number', 'Please enter a valid 13-digit South African ID number.');
-      return;
+      hasError = true;
     }
 
     if (!validatePhoneNumber(phoneNumber)) {
-      alert('Invalid Phone Number', 'Please enter a valid 10-digit phone number.');
-      return;
+      newErrors.phone = phoneNumber.length === 0 ? 'Phone number is required' : 
+                         !phoneNumber.startsWith('0') ? 'Phone number must start with 0' : 
+                         'Phone number must be 10 digits';
+      hasError = true;
     }
 
     if (!isChecked) {
-      alert('Agreement Required', 'You must agree to the Terms & Conditions and Privacy Policy.');
-      return;
+      newErrors.terms = 'You must agree to the Terms & Conditions';
+      hasError = true;
     }
 
-    setDetailsModalVisible(true);
+    setErrors(newErrors);
+
+    if (!hasError) {
+      setDetailsModalVisible(true);
+    }
   };
 
   useEffect(() => {
@@ -105,10 +148,9 @@ const GuestRegisterScreen = () => {
 
   return (
     <Box sx={{ padding: 3, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
-      {/* Back Button with Arrow */}
+      {/* Back Button with Arrow - removed text */}
       <IconButton onClick={() => navigate(-1)}>
         <ArrowBack />
-        <Typography variant="body1">Back</Typography>
       </IconButton>
 
       {/* Title */}
@@ -182,11 +224,12 @@ const GuestRegisterScreen = () => {
       </Typography>
       <TextField
         fullWidth
-        placeholder="Enter your phone number"
+        placeholder="Enter your phone number (start with 0)"
         value={phoneNumber}
-        onChange={(e) => setPhoneNumber(e.target.value)}
+        onChange={handlePhoneChange}
+        error={!!errors.phone}
+        helperText={errors.phone}
         type="tel"
-        inputProps={{ maxLength: 10 }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -212,17 +255,27 @@ const GuestRegisterScreen = () => {
         <ArrowDropDown sx={{ color: '#888' }} />
       </Button>
 
-      {/* Checkbox for Terms & Conditions */}
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={isChecked}
-            onChange={(e) => setIsChecked(e.target.checked)}
-            color="primary"
+      {/* Checkbox for Terms & Conditions with error asterisk */}
+      <Box sx={{ marginBottom: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'start' }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isChecked}
+                onChange={handleCheckboxChange}
+                color="primary"
+              />
+            }
+            label="I agree to the Terms & Conditions and Privacy Policy."
           />
-        }
-        label="I agree to the Terms & Conditions and Privacy Policy."
-      />
+          {errors.terms && (
+            <Error sx={{ color: 'error.main', ml: 1, mt: 1 }} fontSize="small" />
+          )}
+        </Box>
+        {errors.terms && (
+          <FormHelperText error>{errors.terms}</FormHelperText>
+        )}
+      </Box>
 
       {/* Register Button */}
       <Button
@@ -270,10 +323,9 @@ const GuestRegisterScreen = () => {
             minHeight: '100vh',
           }}
         >
-          {/* Back Button with Arrow */}
+          {/* Back Button with Arrow - removed text */}
           <IconButton onClick={() => setDetailsModalVisible(false)}>
             <ArrowBack />
-            <Typography variant="body1">Back</Typography>
           </IconButton>
 
           {/* Title */}
