@@ -9,6 +9,7 @@ import {
   FormControlLabel,
   CircularProgress,
   IconButton,
+  InputAdornment,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -119,62 +120,82 @@ const GuestRegisterScreen = () => {
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
         Email
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
-        <Email sx={{ marginRight: 1, color: '#888' }} />
-        <TextField
-          fullWidth
-          placeholder="Enter email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
-        />
-      </Box>
+      <TextField
+        fullWidth
+        placeholder="Enter email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        type="email"
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Email sx={{ color: '#888' }} />
+            </InputAdornment>
+          ),
+        }}
+        sx={{ marginBottom: 2 }}
+      />
 
       {/* Full Names Input */}
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
         Full Names
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
-        <Person sx={{ marginRight: 1, color: '#888' }} />
-        <TextField
-          fullWidth
-          placeholder="Enter your full names"
-          value={fullNames}
-          onChange={(e) => setFullNames(e.target.value)}
-        />
-      </Box>
+      <TextField
+        fullWidth
+        placeholder="Enter your full names"
+        value={fullNames}
+        onChange={(e) => setFullNames(e.target.value)}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Person sx={{ color: '#888' }} />
+            </InputAdornment>
+          ),
+        }}
+        sx={{ marginBottom: 2 }}
+      />
 
       {/* ID Number Input */}
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
         ID Number
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
-        <CreditCard sx={{ marginRight: 1, color: '#888' }} />
-        <TextField
-          fullWidth
-          placeholder="Optional"
-          value={idNumber}
-          onChange={(e) => setIdNumber(e.target.value)}
-          type="number"
-          inputProps={{ maxLength: 13 }}
-        />
-      </Box>
+      <TextField
+        fullWidth
+        placeholder="Optional"
+        value={idNumber}
+        onChange={(e) => setIdNumber(e.target.value)}
+        type="number"
+        inputProps={{ maxLength: 13 }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <CreditCard sx={{ color: '#888' }} />
+            </InputAdornment>
+          ),
+        }}
+        sx={{ marginBottom: 2 }}
+      />
 
       {/* Phone Number Input */}
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
         Phone Number
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
-        <Phone sx={{ marginRight: 1, color: '#888' }} />
-        <TextField
-          fullWidth
-          placeholder="Enter your phone number"
-          value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
-          type="tel"
-          inputProps={{ maxLength: 10 }}
-        />
-      </Box>
+      <TextField
+        fullWidth
+        placeholder="Enter your phone number"
+        value={phoneNumber}
+        onChange={(e) => setPhoneNumber(e.target.value)}
+        type="tel"
+        inputProps={{ maxLength: 10 }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Phone sx={{ color: '#888' }} />
+            </InputAdornment>
+          ),
+        }}
+        sx={{ marginBottom: 2 }}
+      />
 
       {/* Event Dropdown */}
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
