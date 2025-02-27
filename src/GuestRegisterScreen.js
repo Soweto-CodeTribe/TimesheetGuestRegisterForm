@@ -8,12 +8,10 @@ import {
   Checkbox,
   FormControlLabel,
   CircularProgress,
-  IconButton,
   InputAdornment,
   FormHelperText,
 } from '@mui/material';
 import {
-  ArrowBack,
   Email,
   Person,
   CreditCard,
@@ -148,10 +146,7 @@ const GuestRegisterScreen = () => {
 
   return (
     <Box sx={{ padding: 3, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
-      {/* Back Button with Arrow - removed text */}
-      <IconButton onClick={() => navigate(-1)}>
-        <ArrowBack />
-      </IconButton>
+      {/* Back Button with Arrow completely removed */}
 
       {/* Title */}
       <Typography variant="h4" align="center" sx={{ marginBottom: 4 }}>
@@ -323,10 +318,7 @@ const GuestRegisterScreen = () => {
             minHeight: '100vh',
           }}
         >
-          {/* Back Button with Arrow - removed text */}
-          <IconButton onClick={() => setDetailsModalVisible(false)}>
-            <ArrowBack />
-          </IconButton>
+          {/* Back Button completely removed */}
 
           {/* Title */}
           <Typography variant="h4" align="center" sx={{ marginBottom: 4 }}>
