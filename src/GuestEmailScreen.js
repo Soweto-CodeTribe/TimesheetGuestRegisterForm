@@ -42,28 +42,32 @@ const GuestEmailScreen = () => {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         height: '100vh',
         backgroundColor: '#F5F5F5',
         padding: 3,
       }}
     >
-      {/* Email Icon at the Top (Centered Horizontally) */}
+      {/* Email Icon Stack - Now using relative positioning with padding */}
       <Box
         sx={{
           position: 'relative',
-          marginBottom: 4,
+          marginBottom: 10,
+          height: 160,
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          marginTop: 4,
         }}
       >
         <EmailIcon
           sx={{
             fontSize: 150,
-            color: '#4CAF50',
+            color: '#888',
             position: 'absolute',
-            top: 0,
-            left: '50%',
-            transform: 'translateX(-50%)',
+            top: 4,
+            opacity: 0.4,
           }}
         />
         <EmailIcon
@@ -72,20 +76,15 @@ const GuestEmailScreen = () => {
             color: '#FFF',
             position: 'absolute',
             top: 2,
-            left: '50%',
-            transform: 'translateX(-50%)',
             opacity: 0.7,
           }}
         />
         <EmailIcon
           sx={{
             fontSize: 150,
-            color: '#888',
+            color: '#4CAF50',
             position: 'absolute',
-            top: 4,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            opacity: 0.4,
+            top: 0,
           }}
         />
       </Box>
