@@ -10,6 +10,8 @@ import {
   CircularProgress,
   InputAdornment,
   FormHelperText,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   Email,
@@ -20,6 +22,7 @@ import {
   ArrowDropDown,
   Check,
   Error,
+  Search,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,14 +31,19 @@ const GuestRegisterScreen = () => {
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState('Choose Event');
   const [email, setEmail] = useState('');
+  const [searchEmail, setSearchEmail] = useState('');
   const [fullNames, setFullNames] = useState('');
   const [idNumber, setIdNumber] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [welcomeMessage, setWelcomeMessage] = useState('');
+  const [showWelcomeAlert, setShowWelcomeAlert] = useState(false);
   const [errors, setErrors] = useState({
     phone: '',
     terms: '',
+    search: '',
   });
 
   const events = [
@@ -93,6 +101,59 @@ const GuestRegisterScreen = () => {
     }
   };
 
+  const handleSearchEmail = async () => {
+    if (!validateEmail(searchEmail)) {
+      setErrors({ ...errors, search: 'Please enter a valid email address' });
+      return;
+    }
+
+    setErrors({ ...errors, search: '' });
+    setIsSearching(true);
+
+    try {
+      const url = 'https://timemanagementsystemserver.onrender.com/api/guests/check-email';
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: searchEmail }),
+      });
+
+      if (response.ok) {
+        try {
+          const data = await response.json();
+          // If user found, show welcome message
+          setWelcomeMessage(`Hello! You are our valued guest and we are happy to have you again. You're now logged in. Enjoy the Event!`);
+          setShowWelcomeAlert(true);
+          
+          // Auto-navigate after 3 seconds
+          setTimeout(() => {
+            navigate('/guest-dashboard', { state: { email: searchEmail } });
+          }, 3000);
+        } catch (e) {
+          // If parsing fails but response was OK, still consider it a success
+          setWelcomeMessage(`Hello! You are our valued guest and we are happy to have you again. You're now logged in. Enjoy the Event!`);
+          setShowWelcomeAlert(true);
+          
+          // Auto-navigate after 3 seconds
+          setTimeout(() => {
+            navigate('/guest-dashboard', { state: { email: searchEmail } });
+          }, 3000);
+        }
+      } else {
+        // User not found, they need to register
+        setEmail(searchEmail); // Pre-fill the registration email field
+        setErrors({ ...errors, search: 'Email not found. Please register as a new guest.' });
+      }
+    } catch (error) {
+      console.error('Search failed:', error);
+      setErrors({ ...errors, search: 'Error checking email. Please try again.' });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const handleRegister = async () => {
     const newErrors = { phone: '', terms: '' };
     let hasError = false;
@@ -119,7 +180,7 @@ const GuestRegisterScreen = () => {
       hasError = true;
     }
 
-    setErrors(newErrors);
+    setErrors({ ...errors, ...newErrors });
 
     if (!hasError) {
       await submitRegistrationData();
@@ -200,6 +261,44 @@ const GuestRegisterScreen = () => {
     <Box sx={{ padding: 3, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
       <Typography variant="h4" align="center" sx={{ marginBottom: 4 }}>
         Register As Guest
+      </Typography>
+
+      {/* Search Email Section */}
+      <Box sx={{ backgroundColor: '#fff', padding: 2, borderRadius: 1, marginBottom: 3, boxShadow: 1 }}>
+        <Typography variant="h6" sx={{ marginBottom: 2 }}>
+          Already registered? Check your email
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TextField
+            fullWidth
+            placeholder="Enter your registered email"
+            value={searchEmail}
+            onChange={(e) => setSearchEmail(e.target.value)}
+            type="email"
+            error={!!errors.search}
+            helperText={errors.search}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Email sx={{ color: '#888' }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSearchEmail}
+            disabled={isSearching}
+            sx={{ height: 56, minWidth: 100 }}
+          >
+            {isSearching ? <CircularProgress size={24} /> : <Search />}
+          </Button>
+        </Box>
+      </Box>
+
+      <Typography variant="h6" sx={{ marginBottom: 2, marginTop: 4 }}>
+        New Registration
       </Typography>
 
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
@@ -323,6 +422,23 @@ const GuestRegisterScreen = () => {
       >
         Register
       </Button>
+
+      {/* Welcome Alert */}
+      <Snackbar
+        open={showWelcomeAlert}
+        autoHideDuration={6000}
+        onClose={() => setShowWelcomeAlert(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setShowWelcomeAlert(false)} 
+          severity="success" 
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {welcomeMessage}
+        </Alert>
+      </Snackbar>
 
       <Modal open={modalVisible} onClose={() => setModalVisible(false)}>
         <Box
