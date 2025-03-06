@@ -66,26 +66,22 @@ const GuestRegisterScreen = () => {
   };
 
   const validatePhoneNumber = (phoneNumber) => {
-    // Validate that phone starts with 0 and has exactly 10 digits
-    const regex = /^0\d{9}$/;
+    const regex = /^0\d{9}$/; // Validate that phone starts with 0 and has exactly 10 digits
     return regex.test(phoneNumber);
   };
 
   const handlePhoneChange = (e) => {
     const value = e.target.value;
-    // Only allow digits and limit to 10 characters
     if (/^\d*$/.test(value) && value.length <= 10) {
       setPhoneNumber(value);
-      
-      // Clear error if valid, or set appropriate error message
       if (value.length === 0) {
-        setErrors({...errors, phone: ''});
+        setErrors({ ...errors, phone: '' });
       } else if (value.length > 0 && !value.startsWith('0')) {
-        setErrors({...errors, phone: 'Phone number must start with 0'});
+        setErrors({ ...errors, phone: 'Phone number must start with 0' });
       } else if (value.length === 10) {
-        setErrors({...errors, phone: ''});
+        setErrors({ ...errors, phone: '' });
       } else if (value.length > 0) {
-        setErrors({...errors, phone: 'Phone number must be 10 digits'});
+        setErrors({ ...errors, phone: 'Phone number must be 10 digits' });
       }
     }
   };
@@ -93,29 +89,28 @@ const GuestRegisterScreen = () => {
   const handleCheckboxChange = (e) => {
     setIsChecked(e.target.checked);
     if (e.target.checked) {
-      setErrors({...errors, terms: ''});
+      setErrors({ ...errors, terms: '' });
     }
   };
 
-  const handleRegister = () => {
-    // Reset all errors
+  const handleRegister = async () => {
     const newErrors = { phone: '', terms: '' };
     let hasError = false;
 
     if (!validateEmail(email)) {
-      alert('Invalid Email', 'Please enter a valid email address ending with @gmail.com or @yahoo.com.');
+      alert('Invalid Email. Please enter a valid email address ending with @gmail.com or @yahoo.com.');
       hasError = true;
     }
 
     if (idNumber && !validateIDNumber(idNumber)) {
-      alert('Invalid ID Number', 'Please enter a valid 13-digit South African ID number.');
+      alert('Invalid ID Number. Please enter a valid 13-digit South African ID number.');
       hasError = true;
     }
 
     if (!validatePhoneNumber(phoneNumber)) {
-      newErrors.phone = phoneNumber.length === 0 ? 'Phone number is required' : 
-                         !phoneNumber.startsWith('0') ? 'Phone number must start with 0' : 
-                         'Phone number must be 10 digits';
+      newErrors.phone = phoneNumber.length === 0 ? 'Phone number is required' :
+        !phoneNumber.startsWith('0') ? 'Phone number must start with 0' :
+          'Phone number must be 10 digits';
       hasError = true;
     }
 
@@ -127,15 +122,72 @@ const GuestRegisterScreen = () => {
     setErrors(newErrors);
 
     if (!hasError) {
+      await submitRegistrationData();
+    }
+  };
+
+  const submitRegistrationData = async () => {
+    const url = 'https://timemanagementsystemserver.onrender.com/api/guests/check-in';
+
+    const requestBody = {
+      email,
+      fullNames,
+      IDNumber: idNumber,
+      cellPhone: phoneNumber,
+      event: selectedEvent !== 'Choose Event' ? selectedEvent : 'Other'
+    };
+
+    try {
+      setIsRegistering(true);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      // Don't attempt to parse error responses as JSON
+      if (!response.ok) {
+        let errorMessage = "Registration failed";
+        try {
+          // Try to get error text, but fall back to status text if that fails
+          errorMessage += ": " + (await response.text() || response.statusText);
+        } catch (e) {
+          // If text() fails, just use status
+          errorMessage += `: ${response.status} ${response.statusText}`;
+        }
+        
+        console.error(errorMessage);
+        alert(errorMessage);
+        return;
+      }
+
+      // Only for successful responses, attempt to parse JSON
+      let responseData;
+      try {
+        responseData = await response.json();
+        console.log('Registration successful:', responseData);
+      } catch (e) {
+        // If JSON parsing fails but response was OK, still consider it successful
+        console.warn('Could not parse JSON response, but registration seems successful:', e);
+      }
+      
+      alert('Registration successful! You will receive an email with your credentials.');
       setDetailsModalVisible(true);
+
+    } catch (error) {
+      // Network errors or other exceptions
+      console.error('Registration failed:', error);
+      alert(`Registration failed: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsRegistering(false);
     }
   };
 
   useEffect(() => {
     if (detailsModalVisible) {
-      setIsRegistering(true);
       const timer = setTimeout(() => {
-        setIsRegistering(false);
         setDetailsModalVisible(false);
         navigate('/guest-email', { state: { email } });
       }, 2000);
@@ -146,14 +198,10 @@ const GuestRegisterScreen = () => {
 
   return (
     <Box sx={{ padding: 3, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
-      {/* Back Button with Arrow completely removed */}
-
-      {/* Title */}
       <Typography variant="h4" align="center" sx={{ marginBottom: 4 }}>
         Register As Guest
       </Typography>
 
-      {/* Email Input */}
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
         Email
       </Typography>
@@ -173,7 +221,6 @@ const GuestRegisterScreen = () => {
         sx={{ marginBottom: 2 }}
       />
 
-      {/* Full Names Input */}
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
         Full Names
       </Typography>
@@ -192,7 +239,6 @@ const GuestRegisterScreen = () => {
         sx={{ marginBottom: 2 }}
       />
 
-      {/* ID Number Input */}
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
         ID Number
       </Typography>
@@ -213,7 +259,6 @@ const GuestRegisterScreen = () => {
         sx={{ marginBottom: 2 }}
       />
 
-      {/* Phone Number Input */}
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
         Phone Number
       </Typography>
@@ -235,7 +280,6 @@ const GuestRegisterScreen = () => {
         sx={{ marginBottom: 2 }}
       />
 
-      {/* Event Dropdown */}
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
         Event
       </Typography>
@@ -250,7 +294,6 @@ const GuestRegisterScreen = () => {
         <ArrowDropDown sx={{ color: '#888' }} />
       </Button>
 
-      {/* Checkbox for Terms & Conditions with error asterisk */}
       <Box sx={{ marginBottom: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'start' }}>
           <FormControlLabel
@@ -272,7 +315,6 @@ const GuestRegisterScreen = () => {
         )}
       </Box>
 
-      {/* Register Button */}
       <Button
         variant="contained"
         fullWidth
@@ -282,7 +324,6 @@ const GuestRegisterScreen = () => {
         Register
       </Button>
 
-      {/* Modal for Event Selection */}
       <Modal open={modalVisible} onClose={() => setModalVisible(false)}>
         <Box
           sx={{
@@ -309,7 +350,6 @@ const GuestRegisterScreen = () => {
         </Box>
       </Modal>
 
-      {/* Modal for GuestDetailsScreen */}
       <Modal open={detailsModalVisible} onClose={() => setDetailsModalVisible(false)}>
         <Box
           sx={{
@@ -318,9 +358,6 @@ const GuestRegisterScreen = () => {
             minHeight: '100vh',
           }}
         >
-          {/* Back Button completely removed */}
-
-          {/* Title */}
           <Typography variant="h4" align="center" sx={{ marginBottom: 4 }}>
             Register As Guest
           </Typography>
