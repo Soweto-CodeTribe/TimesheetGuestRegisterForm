@@ -188,7 +188,7 @@ const GuestRegisterScreen = () => {
   };
 
   const submitRegistrationData = async () => {
-    const url = 'https://timemanagementsystemserver.onrender.com/api/guests/check-in';
+    const url = 'https://timemanagementsystemserver.onrender.com/api/guests/event/check-in';
 
     const requestBody = {
       email,
