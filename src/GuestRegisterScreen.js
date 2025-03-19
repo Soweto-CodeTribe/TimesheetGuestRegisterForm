@@ -120,7 +120,7 @@ const GuestRegisterScreen = () => {
 
     try {
       // First API call to check email
-      const url = "http://localhost:6070/api/guests/check-email";
+      const url = "https://timemanagementsystemserver.onrender.com/api/guests/check-email";
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -168,7 +168,7 @@ const GuestRegisterScreen = () => {
   // New function to handle guest check-in
   const handleGuestCheckIn = async (guestId) => {
     try {
-      const checkInUrl = "http://localhost:6070/api/guests/event/check-in";
+      const checkInUrl = "https://timemanagementsystemserver.onrender.com/api/guests/event/check-in";
 
       // console.log("Attempting check-in for guest ID:", guestId);
 
@@ -255,7 +255,7 @@ const GuestRegisterScreen = () => {
       await handleGuestCheckIn(guestId);
     }
 
-    const url = "http://localhost:6070/api/guests/event/check-in";
+    const url = "https://timemanagementsystemserver.onrender.com/api/guests/event/check-in";
 
     const requestBody = {
       email,
@@ -320,7 +320,7 @@ const GuestRegisterScreen = () => {
     const fetchEvents = async () => {
       try {
         const response = await fetch(
-          "http://localhost:6070/api/guests/all-events"
+          "https://timemanagementsystemserver.onrender.com/api/guests/all-events"
         );
 
         const data = await response.json();
