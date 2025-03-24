@@ -289,7 +289,7 @@ const GuestRegisterScreen = () => {
         }
 
         console.error(errorMessage);
-        // alert(errorMessage);
+        alert(errorMessage);
         return;
       }
 
