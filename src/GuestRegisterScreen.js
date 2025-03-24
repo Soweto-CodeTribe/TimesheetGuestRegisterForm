@@ -44,6 +44,7 @@ const GuestRegisterScreen = () => {
   const [events, setEvents] = useState([]);
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [showWelcomeAlert, setShowWelcomeAlert] = useState(false);
+  const [termsModalVisible, setTermsModalVisible] = useState(false);
   const [errors, setErrors] = useState({
     phone: "",
     terms: "",
@@ -92,6 +93,7 @@ const GuestRegisterScreen = () => {
 
   const handleCheckboxChange = (e) => {
     setIsChecked(e.target.checked);
+    setTermsModalVisible(true)
     if (e.target.checked) {
       setErrors({ ...errors, terms: "" });
     }
@@ -500,6 +502,45 @@ const GuestRegisterScreen = () => {
             }
             label="I agree to the Terms & Conditions and Privacy Policy."
           />
+
+<Modal open={termsModalVisible} onClose={() => setTermsModalVisible(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "80%",
+            backgroundColor: "#fff",
+            borderRadius: 2,
+            padding: 2,
+            maxHeight: "70vh",
+            overflowY: "auto",
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Terms and Conditions
+          </Typography>
+          <Typography variant="body1" paragraph>
+            We value your privacy and wish to inform you that we may use your email or phone number to reach out regarding events or opportunities we believe you might find beneficial.
+          </Typography>
+          <Typography variant="body1" paragraph>
+            Participation in these opportunities is completely voluntary. Should you choose to accept our communications, we are here to guide you and ensure you have a rewarding experience.
+          </Typography>
+          <Typography variant="body1" paragraph>
+            If you have any questions or concerns regarding your participation or our communications, please feel free to reach out to us.
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setTermsModalVisible(false)}
+            sx={{ marginTop: 2 }}
+          >
+            I Accept
+          </Button>
+        </Box>
+      </Modal>
+
           {errors.terms && (
             <Error
               sx={{ color: "error.main", ml: 1, mt: 1 }}
