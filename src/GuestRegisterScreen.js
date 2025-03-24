@@ -41,17 +41,10 @@ const GuestRegisterScreen = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [guestId, setGuestId] = useState("");
   const [isReturning, setIsReturning] = useState(false);
-  const [events] = useState([
-    { title: "React Bootcamp", eventId: 1 },
-    { title: "Codetribe Orientation", eventId: 2 },
-    { title: "IOT Workshop", eventId: 3 },
-    { title: "Python Workshop", eventId: 4 },
-    { title: "React Native Workshop", eventId: 5 },
-    { title: "Softskills Program", eventId: 6 },
-    { title: "Other", eventId: 7 },
-  ]);
+  const [events, setEvents] = useState([]);
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [showWelcomeAlert, setShowWelcomeAlert] = useState(false);
+  const [termsModalVisible, setTermsModalVisible] = useState(false);
   const [errors, setErrors] = useState({
     phone: "",
     terms: "",
@@ -63,6 +56,7 @@ const GuestRegisterScreen = () => {
   const handleEventSelection = (eventName, eventId) => {
     setSelectedEvent(eventName);
     setSelectedEventId(eventId);
+    // console.log("event", eventName);
     setModalVisible(false);
   };
 
@@ -99,6 +93,7 @@ const GuestRegisterScreen = () => {
 
   const handleCheckboxChange = (e) => {
     setIsChecked(e.target.checked);
+    setTermsModalVisible(true)
     if (e.target.checked) {
       setErrors({ ...errors, terms: "" });
     }
@@ -126,6 +121,7 @@ const GuestRegisterScreen = () => {
     setIsSearching(true);
 
     try {
+      // First API call to check email
       const url = "https://timemanagementsystemserver.onrender.com/api/guests/check-email";
       const response = await fetch(url, {
         method: "POST",
@@ -135,7 +131,10 @@ const GuestRegisterScreen = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setWelcomeMessage(`Welcome back! ${data.fullNames}. Choose today's event to check-in to.`);
+
+        setWelcomeMessage(
+          `Welcome back! ${data.fullNames}. Choose today's event to check-in to.`
+        );
         setIsReturning(true);
         setEmail(data.email);
         setPhoneNumber(data.cellPhone);
@@ -143,6 +142,13 @@ const GuestRegisterScreen = () => {
         setFullNames(data.fullNames);
         setGuestId(data.guestId);
         setShowWelcomeAlert(true);
+
+        if (!data.guestId) {
+          throw new Error("Guest ID is missing in the response.");
+        }
+
+        // Proceed to check-in the guest
+        // await handleGuestCheckIn(data.guestId);
       } else {
         setEmail(searchEmail);
         setErrors({
@@ -161,17 +167,63 @@ const GuestRegisterScreen = () => {
     }
   };
 
+  // New function to handle guest check-in
+  const handleGuestCheckIn = async (guestId) => {
+    try {
+      const checkInUrl = "https://timemanagementsystemserver.onrender.com/api/guests/event/check-in";
+
+      // console.log("Attempting check-in for guest ID:", guestId);
+
+      const checkInResponse = await fetch(checkInUrl, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: searchEmail,
+          isReturning: true,
+          guestId: guestId,
+        }),
+      });
+
+      if (!checkInResponse.ok) {
+        const errorText = await checkInResponse.text();
+        console.error("Check-in error:", errorText);
+        throw new Error(`Check-in failed: ${checkInResponse.status}`);
+      }
+
+      const checkInData = await checkInResponse.json();
+      // console.log("Check-in successful:", checkInData);
+
+      setWelcomeMessage(
+        `You've been successfully checked in. Enjoy the event!`
+      );
+      setShowWelcomeAlert(true);
+      setTimeout(() => {
+        navigate("/");
+      }, 3000);
+    } catch (error) {
+      console.error("Check-in API call failed:", error);
+      setErrors({
+        ...errors,
+        search: "Error checking you in. Please try again.",
+      });
+    }
+  };
+
   const handleRegister = async () => {
     const newErrors = { phone: "", terms: "" };
     let hasError = false;
 
     if (!validateEmail(email)) {
-      alert("Invalid Email. Please enter a valid email address ending with @gmail.com or @yahoo.com.");
+      alert(
+        "Invalid Email. Please enter a valid email address ending with @gmail.com or @yahoo.com."
+      );
       hasError = true;
     }
 
     if (idNumber && !validateIDNumber(idNumber)) {
-      alert("Invalid ID Number. Please enter a valid 13-digit South African ID number.");
+      alert(
+        "Invalid ID Number. Please enter a valid 13-digit South African ID number."
+      );
       hasError = true;
     }
 
@@ -195,59 +247,104 @@ const GuestRegisterScreen = () => {
     if (!hasError) {
       await submitRegistrationData();
       setDetailsModalVisible(true);
+
+      // console.log("Guest ID before check-in:", guestId);
     }
   };
 
   const submitRegistrationData = async () => {
-      const url = "https://timemanagementsystemserver.onrender.com/api/guests/event/check-in";
+    if (isReturning) {
+      await handleGuestCheckIn(guestId);
+    }
 
-      const requestBody = {
-        email,
-        fullNames,
-        IDNumber: idNumber,
-        cellPhone: phoneNumber,
-        event: selectedEvent || "Other",
-        eventId: selectedEventId,
-      };
+    const url = "https://timemanagementsystemserver.onrender.com/api/guests/event/check-in";
 
-      try {
-        setIsRegistering(true);
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        });
+    const requestBody = {
+      email,
+      fullNames,
+      IDNumber: idNumber,
+      cellPhone: phoneNumber,
+      event: selectedEvent !== "Choose Event" ? selectedEvent : "Other",
+      eventId: selectedEventId,
+    };
 
-        if (!response.ok) {
-          let errorMessage = "Registration failed";
-          try {
-            errorMessage += ": " + ((await response.text()) || response.statusText);
-          } catch (e) {
-            errorMessage += `: ${response.status} ${response.statusText}`;
-          }
+    try {
+      setIsRegistering(true);
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
 
-          console.error(errorMessage);
-          return;
+      // Don't attempt to parse error responses as JSON
+      if (!response.ok) {
+        let errorMessage = "Registration failed";
+        try {
+          // Try to get error text, but fall back to status text if that fails
+          errorMessage +=
+            ": " + ((await response.text()) || response.statusText);
+        } catch (e) {
+          // If text() fails, just use status
+          errorMessage += `: ${response.status} ${response.statusText}`;
         }
 
-        // Show success message
-        setWelcomeMessage("Registration successful! You will now be redirected.");
-        setShowWelcomeAlert(true);
+        console.error(errorMessage);
+        alert(errorMessage);
+        return;
+      }
 
-        // Wait for a few seconds, then navigate to GuestEmailScreen
-        setTimeout(() => {
-          navigate("/guest-email", { state: { email } });
-        }, 3000);
-        
+      // Only for successful responses, attempt to parse JSON
+      let responseData;
+      try {
+        responseData = await response.json();
+        // console.log("Registration successful:", responseData);
+      } catch (e) {
+        // If JSON parsing fails but response was OK, still consider it successful
+        console.warn(
+          "Could not parse JSON response, but registration seems successful:",
+          e
+        );
+      }
+
+      setDetailsModalVisible(true);
+    } catch (error) {
+      // Network errors or other exceptions
+      console.error("Registration failed:", error);
+      alert(`Registration failed: ${error.message || "Unknown error"}`);
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch(
+          "https://timemanagementsystemserver.onrender.com/api/guests/all-events"
+        );
+
+        const data = await response.json();
+        setEvents(data);
       } catch (error) {
-        console.error("Registration failed:", error);
-        alert(`Registration failed: ${error.message || "Unknown error"}`);
-      } finally {
-        setIsRegistering(false);
+        console.error("Error fetching events:", error);
       }
     };
+
+    fetchEvents();
+  }, []);
+
+  useEffect(() => {
+    if (detailsModalVisible) {
+      const timer = setTimeout(() => {
+        setDetailsModalVisible(false);
+        navigate("/guest-email", { state: { email } });
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [detailsModalVisible, navigate, email]);
 
   return (
     <Box sx={{ padding: 3, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
@@ -388,7 +485,7 @@ const GuestRegisterScreen = () => {
         onClick={() => setModalVisible(true)}
       >
         <Typography sx={{ flexGrow: 1, textAlign: "left", color: "#888" }}>
-          {selectedEvent || "Choose Event"}
+          {selectedEvent}
         </Typography>
         <ArrowDropDown sx={{ color: "#888" }} />
       </Button>
@@ -405,6 +502,45 @@ const GuestRegisterScreen = () => {
             }
             label="I agree to the Terms & Conditions and Privacy Policy."
           />
+
+<Modal open={termsModalVisible} onClose={() => setTermsModalVisible(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "80%",
+            backgroundColor: "#fff",
+            borderRadius: 2,
+            padding: 2,
+            maxHeight: "70vh",
+            overflowY: "auto",
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Terms and Conditions
+          </Typography>
+          <Typography variant="body1" paragraph>
+            We value your privacy and wish to inform you that we may use your email or phone number to reach out regarding events or opportunities we believe you might find beneficial.
+          </Typography>
+          <Typography variant="body1" paragraph>
+            Participation in these opportunities is completely voluntary. Should you choose to accept our communications, we are here to guide you and ensure you have a rewarding experience.
+          </Typography>
+          <Typography variant="body1" paragraph>
+            If you have any questions or concerns regarding your participation or our communications, please feel free to reach out to us.
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setTermsModalVisible(false)}
+            sx={{ marginTop: 2 }}
+          >
+            I Accept
+          </Button>
+        </Box>
+      </Modal>
+
           {errors.terms && (
             <Error
               sx={{ color: "error.main", ml: 1, mt: 1 }}
@@ -454,26 +590,28 @@ const GuestRegisterScreen = () => {
             padding: 2,
           }}
         >
-          {Array.isArray(events) && events.length > 0 ? (
-            events.map((event) => (
-              <Button
-                key={event.eventId}
-                fullWidth
-                sx={{
-                  textAlign: "left",
-                  height: "70px",
-                  justifyContent: "flex-start",
-                  flexDirection: "column",
-                  alignItems: "start",
-                }}
-                onClick={() => handleEventSelection(event.title, event.eventId)}
-              >
-                <Typography variant="h6">{event.title}</Typography>
-              </Button>
-            ))
-          ) : (
-            <Typography variant="subtitle1">No events available.</Typography>
-          )}
+          {events.map((event) => (
+            <Button
+              key={event.eventId}
+              fullWidth
+              sx={{
+                textAlign: "left",
+                height: "70px",
+                justifyContent: "flex-start",
+                flexDirection: "column",
+                alignItems: "start",
+              }}
+              onClick={() => handleEventSelection(event.title, event.eventId)}
+            >
+              <Typography variant="h6">{event?.title || ""}</Typography>
+              <Typography variant="body2">
+                {event?.location || "No Location"}
+              </Typography>
+              <Typography variant="caption">
+                {event?.date ? new Date(event.date).toLocaleDateString() : ""}
+              </Typography>
+            </Button>
+          ))}
         </Box>
       </Modal>
 
@@ -541,7 +679,7 @@ const GuestRegisterScreen = () => {
             <Event sx={{ marginRight: 1, color: "#888" }} />
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="body2">Event</Typography>
-              <Typography variant="body1">{selectedEvent || "N/A"}</Typography>
+              <Typography variant="body1">{selectedEvent}</Typography>
             </Box>
           </Box>
 
