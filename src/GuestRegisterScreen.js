@@ -12,6 +12,7 @@ import {
   FormHelperText,
   Snackbar,
   Alert,
+  MenuItem,
 } from "@mui/material";
 import {
   Email,
@@ -23,6 +24,8 @@ import {
   Check,
   Error,
   Search,
+  Wc,
+  Numbers,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
@@ -36,6 +39,8 @@ const GuestRegisterScreen = () => {
   const [fullNames, setFullNames] = useState("");
   const [idNumber, setIdNumber] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [gender, setGender] = useState("");
+  const [ageGroup, setAgeGroup] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
@@ -50,6 +55,18 @@ const GuestRegisterScreen = () => {
     terms: "",
     search: "",
   });
+
+  // Options for form fields
+  const genderOptions = ["Male", "Female", "Prefer not to say"];
+
+  const ageGroupOptions = [
+    "Under 18",
+    "18-24",
+    "25-34",
+    "35-44",
+    "45-54",
+    "55 and above"
+  ];
 
   const navigate = useNavigate();
 
@@ -105,6 +122,8 @@ const GuestRegisterScreen = () => {
     setFullNames("");
     setIdNumber("");
     setPhoneNumber("");
+    setGender("");
+    setAgeGroup("");
     setSelectedEvent("Choose Event");
     setSelectedEventId(null);
     setIsChecked(false);
@@ -140,6 +159,8 @@ const GuestRegisterScreen = () => {
         setPhoneNumber(data.cellPhone);
         setIdNumber(data.IDNumber);
         setFullNames(data.fullNames);
+        setGender(data.gender || "");
+        setAgeGroup(data.ageGroup || "");
         setGuestId(data.guestId);
         setShowWelcomeAlert(true);
 
@@ -264,6 +285,8 @@ const GuestRegisterScreen = () => {
       fullNames,
       IDNumber: idNumber,
       cellPhone: phoneNumber,
+      gender,
+      ageGroup,
       event: selectedEvent !== "Choose Event" ? selectedEvent : "Other",
       eventId: selectedEventId,
     };
@@ -475,6 +498,66 @@ const GuestRegisterScreen = () => {
         }}
         sx={{ marginBottom: 2 }}
       />
+
+      {/* Gender Section */}
+      <Typography variant="body2" sx={{ marginBottom: 1 }}>
+        Gender
+      </Typography>
+      <TextField
+        fullWidth
+        select
+        placeholder="Select Gender"
+        value={gender}
+        onChange={(e) => setGender(e.target.value)}
+        SelectProps={{
+          native: true,
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Wc sx={{ color: "#888" }} />
+            </InputAdornment>
+          ),
+        }}
+        sx={{ marginBottom: 2 }}
+      >
+        <option value="" style={{color: "#888"}}>Select Gender</option>
+        {genderOptions.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </TextField>
+
+      {/* Age Group Section */}
+      <Typography variant="body2" sx={{ marginBottom: 1 }}>
+        Age Group
+      </Typography>
+      <TextField
+        fullWidth
+        select
+        placeholder="Select Age Group"
+        value={ageGroup}
+        onChange={(e) => setAgeGroup(e.target.value)}
+        SelectProps={{
+          native: true,
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Numbers sx={{ color: "#888" }} />
+            </InputAdornment>
+          ),
+        }}
+        sx={{ marginBottom: 2 }}
+      >
+        <option value="" style={{color: "#888"}}>Select Age Group</option>
+        {ageGroupOptions.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </TextField>
 
       <Typography variant="body2" sx={{ marginBottom: 1 }}>
         Event
