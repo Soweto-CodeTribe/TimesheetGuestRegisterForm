@@ -22,34 +22,38 @@
         "Helvetica Neue", sans-serif;
     box-sizing: border-box;
     border: .1px solid var(--primary-color);
-   
-    
+
+    text-transform: uppercase;
     animation: shadowMove 4s ease-in-out infinite;
 }
 
 @keyframes shadowMove {
     0% {
-        box-shadow: 
+        box-shadow:
             20px 20px 15px #8bc34a17,
             -10px -10px 5px rgba(139, 195, 74, 0.3);
     }
+
     25% {
-        box-shadow: 
+        box-shadow:
             -20px 20px 15px #8bc34a17,
             10px -10px 5px rgba(139, 195, 74, 0.3);
     }
+
     50% {
-        box-shadow: 
+        box-shadow:
             -20px -20px 15px #8bc34a17,
             10px 10px 5px rgba(139, 195, 74, 0.3);
     }
+
     75% {
-        box-shadow: 
+        box-shadow:
             20px -20px 15px #8bc34a17,
             -10px 10px 5px rgba(139, 195, 74, 0.3);
     }
+
     100% {
-        box-shadow: 
+        box-shadow:
             20px 20px 15px #8bc34a17,
             -10px -10px 5px rgba(139, 195, 74, 0.3);
     }
@@ -93,21 +97,21 @@
 
 /* Card styles */
 .card {
-    background-color: var(--card-background);
     padding: 1rem;
     margin-bottom: 1.5rem;
     display: flex;
     flex-direction: column;
     border-top: 2px solid var(--primary-color);
     border-bottom: 2px solid var(--primary-color);
- 
+    background: transparent;
+
 }
 
 /* Input styles */
 .search-container {
     display: flex;
     flex-direction: column;
-    top: -50px;
+    background: transparent;
 }
 
 .button-text {
@@ -139,7 +143,6 @@
     border-radius: var(--border-radius);
     padding: 0 0.75rem;
     margin-bottom: 1rem;
-    background-color: var(--card-background);
 }
 
 .input-group svg {
@@ -152,11 +155,12 @@
 .input-field {
     flex: 1;
     border: none;
-    padding: 0.85rem 0;
-    font-size: .8rem;
+    padding: 1rem 0;
+    font-size: .7rem;
     background: transparent;
     outline: none;
     color: var(--text-color);
+    text-transform: uppercase;
 }
 
 .input-field::placeholder {
@@ -170,13 +174,14 @@
 .select-field {
     flex: 1;
     border: none;
-    padding: 0.75rem 0;
-    font-size: 1rem;
+    padding: 1rem 0;
+    font-size: .7rem;
     background: transparent;
     outline: none;
     color: var(--text-color);
     appearance: none;
     width: 100%;
+    text-transform: uppercase;
 }
 
 .select-field option {
@@ -232,6 +237,7 @@
     border-radius: var(--border-radius);
     background-color: transparent;
     cursor: pointer;
+    text-transform: uppercase;
 }
 
 .event-text {
